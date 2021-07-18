@@ -14,30 +14,46 @@ namespace FileManagerApp
         {
             Console.WriteLine("Введите путь к каталогу");
             string DirName = Console.ReadLine();
-            ShowDirContents(DirName);
+            ShowDirContents(DirName, Properties.Settings.Default.LinesPerPage);
         }
-        static void ShowDirContents(string DirName)
+        static void ShowDirContents(string DirName, int LinesPerPage)
         {
             var DirContents = Directory.GetFileSystemEntries(DirName, "*", SearchOption.TopDirectoryOnly);
-            int LinesPerPage = 3;
             int Pages = DirContents.Length / LinesPerPage;
             if (DirContents.Length % LinesPerPage != 0) Pages += 1;
-            for (int page = 0; page < Pages; page++)
-            {
-                Console.WriteLine($"Printing page #{page + 1}");
-                var output = DirContents.Skip(LinesPerPage * page).Take(LinesPerPage);
-                for (int i = 0; i < output.ToArray().Length; i++)
-                {
-                    Console.WriteLine(output.ElementAt(i));
-                }
-                Console.WriteLine("");
-            }
-            Console.ReadKey();
+            int page = 0;
+            Console.WriteLine($"Вывод разбит на {Pages} страниц.\n");
+            DisplayPage(DirContents, page);
         }
-
-        static void ShowByPage(string[] DirContents, int PageNum, int PageSize)
+        static void DisplayPage(string[] DirContents, int page)
         {
+            Console.WriteLine($"Страница {page + 1}:");
+            var output = DirContents.Skip(Properties.Settings.Default.LinesPerPage * page).Take(Properties.Settings.Default.LinesPerPage);
+            for (int i = 0; i < output.ToArray().Length; i++)
+            {
+                Console.WriteLine(output.ElementAt(i));
+            }
+        }
+        static int GetNextUserChoice()
+        {
+            Console.WriteLine("Следующая: стрелка вправо | Предыдущая: стрелка влево | Возврат: любая другая клавиша");
+            var input = Console.ReadKey();
+            int UserChoice;
+            switch (input.Key)
+            {
+                case ConsoleKey.LeftArrow:
+                    UserChoice = 1;
+                    break;
 
+                case ConsoleKey.RightArrow:
+                    UserChoice = 2;
+                    break;
+
+                default:
+                    UserChoice = 3;
+                    break;
+            }
+            return UserChoice;
         }
     }
 }
