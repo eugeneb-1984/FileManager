@@ -21,9 +21,20 @@ namespace FileManagerApp
             var DirContents = Directory.GetFileSystemEntries(DirName, "*", SearchOption.TopDirectoryOnly);
             int Pages = DirContents.Length / LinesPerPage;
             if (DirContents.Length % LinesPerPage != 0) Pages += 1;
-            int page = 0;
             Console.WriteLine($"Вывод разбит на {Pages} страниц.\n");
-            DisplayPage(DirContents, page);
+            bool isDone = false;
+            bool isEdgePage = false;
+            int page = 0;
+            while (!isDone)
+            {
+                if (!isEdgePage)
+                {
+                    DisplayPage(DirContents, page);
+                    Console.WriteLine("Следующая: стрелка вправо | Предыдущая: стрелка влево | Возврат: любая другая клавиша");
+                }
+                GetNextUserChoice(Pages, ref page, ref isDone, ref isEdgePage);
+            }
+
         }
         static void DisplayPage(string[] DirContents, int page)
         {
@@ -34,26 +45,42 @@ namespace FileManagerApp
                 Console.WriteLine(output.ElementAt(i));
             }
         }
-        static int GetNextUserChoice()
+        static void GetNextUserChoice (int totalPages, ref int page, ref bool isDone, ref bool isEdgePage)
         {
-            Console.WriteLine("Следующая: стрелка вправо | Предыдущая: стрелка влево | Возврат: любая другая клавиша");
             var input = Console.ReadKey();
-            int UserChoice;
             switch (input.Key)
             {
                 case ConsoleKey.LeftArrow:
-                    UserChoice = 1;
+                    if (page - 1 < 0)
+                    {
+                        Console.WriteLine("Вы уже находитесь на самой первой странице");
+                        isEdgePage = true;
+                    }
+                    else
+                    {
+                        page--;
+                        isEdgePage = false;
+                    }
                     break;
 
                 case ConsoleKey.RightArrow:
-                    UserChoice = 2;
+                    if (page + 2 > totalPages)
+                    {
+                        Console.WriteLine("Вы уже находитесь на самой последней странице");
+                        isEdgePage = true;
+                    }
+                    else
+                    {
+                        page++;
+                        isEdgePage = false;
+                    }
                     break;
 
                 default:
-                    UserChoice = 3;
+                    Console.WriteLine("Ок, выходим");
+                    isDone = true;
                     break;
             }
-            return UserChoice;
         }
     }
 }
