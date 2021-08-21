@@ -23,7 +23,7 @@ namespace FileManagerApp
                 if (!isEdgePage)
                 {
                     DisplayPage(DirContents, page);
-                    Console.WriteLine("Следующая: стрелка вправо | Предыдущая: стрелка влево | Возврат: любая другая клавиша");
+                    Console.WriteLine("Следующая: стрелка вправо | Предыдущая: стрелка влево | Выход: любая другая клавиша");
                 }
                 GetNextUserChoice(Pages, ref page, ref isDone, ref isEdgePage);
             }
@@ -81,8 +81,12 @@ namespace FileManagerApp
             Console.ReadKey();
         }
 
-        public static void Copy(string SourcePath, string TargetPath) //ToDo Exceptions and Overwriting
+        public static void Copy(string SourcePath, string TargetPath, string OverwriteParam) //ToDo WorkDir
         {
+            //Парсим OverwriteParam
+            string overwriteParam = OverwriteParam;
+            bool Overwrite = overwriteParam == "-o" ? true : false;
+
             // Создаём целевой каталог     
             if (!Directory.Exists(TargetPath))
             {
@@ -91,28 +95,29 @@ namespace FileManagerApp
 
             FileAttributes attr = File.GetAttributes(SourcePath);
             if (attr.HasFlag(FileAttributes.Directory))
-                {
+            {
                 // Получаем список файлов в исходном каталоге и копируем их в целевой каталог
                 DirectoryInfo dirSource = new DirectoryInfo(SourcePath);
                 FileInfo[] files = dirSource.GetFiles();
                 foreach (FileInfo file in files)
                 {
                     string tempPath = Path.Combine(TargetPath, file.Name);
-                    file.CopyTo(tempPath, true);
+                    file.CopyTo(tempPath, Overwrite);
                 }
                 // Отрабатываем подкаталоги
                 DirectoryInfo[] subDirs = dirSource.GetDirectories();
+
                 foreach (DirectoryInfo subdir in subDirs)
                 {
                     string tempPath = Path.Combine(TargetPath, subdir.Name);
-                    Copy(subdir.FullName, tempPath);
+                    Copy(subdir.FullName, tempPath, overwriteParam);
                 }
             }
             else
             {
                 FileInfo SourceFile = new FileInfo(SourcePath);
                 string tempPath = Path.Combine(TargetPath, SourceFile.Name);
-                SourceFile.CopyTo(tempPath);
+                SourceFile.CopyTo(tempPath, Overwrite);
             }
         }
 
@@ -169,7 +174,13 @@ namespace FileManagerApp
         {
             int LinesPerPage = Properties.Settings.Default.LinesPerPage;
 
-           string [] Args = Command.Split();
+            string[] Args = new string[5];
+            string[] Commands = Command.Split();
+            for (int i = 0; i<Commands.Length; i++)
+            {
+                Args[i] = Commands[i];
+            }
+
            switch (Args[0])
             {
                 case "dir":
@@ -181,7 +192,7 @@ namespace FileManagerApp
                     break;
 
                 case "cp":
-                    Copy(Args[1], Args[2]);
+                    Copy(Args[1], Args[2], Args[3]);
                     break;
 
                 case "mv":
