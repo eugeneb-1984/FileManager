@@ -81,16 +81,82 @@ namespace FileManagerApp
             Console.ReadKey();
         }
 
-        public static void Copy() //ToDo
+        public static void Copy(string SourcePath, string TargetPath) //ToDo Exceptions and Overwriting
         {
-            Console.WriteLine("Копирование в разработке");
-            Console.ReadKey();
+            // Создаём целевой каталог     
+            if (!Directory.Exists(TargetPath))
+            {
+                Directory.CreateDirectory(TargetPath);
+            }
+
+            FileAttributes attr = File.GetAttributes(SourcePath);
+            if (attr.HasFlag(FileAttributes.Directory))
+                {
+                // Получаем список файлов в исходном каталоге и копируем их в целевой каталог
+                DirectoryInfo dirSource = new DirectoryInfo(SourcePath);
+                FileInfo[] files = dirSource.GetFiles();
+                foreach (FileInfo file in files)
+                {
+                    string tempPath = Path.Combine(TargetPath, file.Name);
+                    file.CopyTo(tempPath, true);
+                }
+                // Отрабатываем подкаталоги
+                DirectoryInfo[] subDirs = dirSource.GetDirectories();
+                foreach (DirectoryInfo subdir in subDirs)
+                {
+                    string tempPath = Path.Combine(TargetPath, subdir.Name);
+                    Copy(subdir.FullName, tempPath);
+                }
+            }
+            else
+            {
+                FileInfo SourceFile = new FileInfo(SourcePath);
+                string tempPath = Path.Combine(TargetPath, SourceFile.Name);
+                SourceFile.CopyTo(tempPath);
+            }
         }
 
-        public static void Delete() //ToDo
+        public static void Move(string SourcePath, string TargetPath) //ToDo Exceptions and Overwriting
         {
-            Console.WriteLine("Удаление в разработке");
-            Console.ReadKey();
+            FileAttributes attr = File.GetAttributes(SourcePath);
+            if (attr.HasFlag(FileAttributes.Directory))
+            {
+                Directory.Move(SourcePath, TargetPath);
+            }
+            else
+            {
+                FileInfo SourceFile = new FileInfo(SourcePath);
+                SourceFile.MoveTo(TargetPath);
+            }
+        }
+
+        public static void Delete(string Path) //ToDo Exceptions
+        {
+            FileAttributes attr = File.GetAttributes(Path);
+            if (attr.HasFlag(FileAttributes.Directory)) 
+            {
+                //Удаляем файлы
+                DirectoryInfo dirSource = new DirectoryInfo(Path);
+                FileInfo[] files = dirSource.GetFiles();
+                foreach (FileInfo file in files)
+                {
+                    file.Delete();
+                }
+
+                //Удаляем подкаталоги
+                DirectoryInfo[] subDirs = dirSource.GetDirectories();
+                foreach (DirectoryInfo subdir in subDirs)
+                {
+                    Delete(subdir.FullName);
+                }
+
+                //Удаляем каталог
+                Directory.Delete(Path);
+            }
+            else
+            {
+                File.Delete(Path);
+            }
         }
 
         public static void GetFileInfo() //ToDo
@@ -101,7 +167,7 @@ namespace FileManagerApp
 
         public static void Parse(string Command)
         {
-           int LinesPerPage = Properties.Settings.Default.LinesPerPage;
+            int LinesPerPage = Properties.Settings.Default.LinesPerPage;
 
            string [] Args = Command.Split();
            switch (Args[0])
@@ -115,11 +181,15 @@ namespace FileManagerApp
                     break;
 
                 case "cp":
-                    Copy();
+                    Copy(Args[1], Args[2]);
+                    break;
+
+                case "mv":
+                    Move(Args[1], Args[2]);
                     break;
 
                 case "rm":
-                    Delete();
+                    Delete(Args[1]);
                     break;
 
                 case "info":
@@ -128,7 +198,6 @@ namespace FileManagerApp
 
                 default:
                     Console.WriteLine("Команда не распознана");
-                    Console.ReadKey();
                     break;
             }
             

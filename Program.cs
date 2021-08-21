@@ -12,11 +12,22 @@ namespace FileManagerApp
     {
         static void Main(string[] args)
         {
+            bool isDone = false;
             Console.WriteLine("Это консольный файловый менеджер.");
             Console.WriteLine("для вывода инструкции наберите man");
-            Console.WriteLine("Введите команду");
-            var command = Console.ReadLine();
-            Command.Parse(command);
+            while (!isDone)
+            {
+                Console.WriteLine("Введите команду");
+                var command = Console.ReadLine();
+                if (command != "done")
+                {
+                    Command.Parse(command);
+                }
+                else
+                {
+                    isDone = true;
+                }
+            }
         }
     }
 }
