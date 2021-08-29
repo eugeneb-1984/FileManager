@@ -31,5 +31,17 @@ namespace FileManagerApp.Properties {
                 return ((int)(this["LinesPerPage"]));
             }
         }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("C:\\")]
+        public string workDir {
+            get {
+                return ((string)(this["workDir"]));
+            }
+            set {
+                this["workDir"] = value;
+            }
+        }
     }
 }

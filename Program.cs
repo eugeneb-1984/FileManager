@@ -19,29 +19,21 @@ namespace FileManagerApp
             {
                 try
                 {
-
-                    Console.WriteLine("Введите команду");
+                    string currentDir = Properties.Settings.Default.workDir;
+                    Console.Write($"{currentDir}>");
                     var command = Console.ReadLine();
                     if (command != "done")
                     {
-                        Command.Parse(command);
+                        Parser.Parse(command);
                     }
                     else
                     {
                         isDone = true;
                     }
                 }
-                catch (FileNotFoundException ErrorFileNotFound)
-                {
-                    Console.WriteLine($"Ошибка: файл {ErrorFileNotFound.FileName} не найден.");
-                }
-                catch (IOException)
-                {
-                    Console.WriteLine($"Ошибка: файл уже существует в целевом каталоге. Если вы хотите перезаписать его, используйте ключ \"-o\"");
-                }
                 catch (Exception ex)
                 {
-                    Console.WriteLine($"Произошла неизвестная ошибка: \n {ex.GetType()} \n {ex.GetType()} \n {ex.Message}");
+                    Console.WriteLine($"Ошибка: {ex.Message}");
                 }
             }
         }

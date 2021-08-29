@@ -7,7 +7,7 @@ using System.IO;
 
 namespace FileManagerApp
 {
-    class Command
+    public class App
     {
         public static void ShowDirContents(string DirName, int LinesPerPage)
         {
@@ -81,28 +81,31 @@ namespace FileManagerApp
             Console.ReadKey();
         }
 
-        public static void Copy(string SourcePath, string TargetPath, string OverwriteParam) //ToDo WorkDir
+        public static void Copy(string SourcePath, string TargetPath, bool mustOverwrite)
         {
-            //Парсим OverwriteParam
-            string overwriteParam = OverwriteParam;
-            bool Overwrite = overwriteParam == "-o" ? true : false;
+            //Если копируем каталог, добавляем его в TargetPath
+            FileAttributes sourcePathAttr = File.GetAttributes(SourcePath);
+            if (sourcePathAttr.HasFlag(FileAttributes.Directory))
+            {
+                FileInfo sourcePathInfo = new FileInfo(SourcePath);
+                TargetPath = Path.Combine(TargetPath, sourcePathInfo.Name);
+            }
 
-            // Создаём целевой каталог     
+            //Если нет каталога по TargetPath, создаём его
             if (!Directory.Exists(TargetPath))
             {
                 Directory.CreateDirectory(TargetPath);
             }
 
-            FileAttributes attr = File.GetAttributes(SourcePath);
-            if (attr.HasFlag(FileAttributes.Directory))
+            //Копируем файлы каталога
+            if (sourcePathAttr.HasFlag(FileAttributes.Directory))
             {
-                // Получаем список файлов в исходном каталоге и копируем их в целевой каталог
                 DirectoryInfo dirSource = new DirectoryInfo(SourcePath);
                 FileInfo[] files = dirSource.GetFiles();
                 foreach (FileInfo file in files)
                 {
                     string tempPath = Path.Combine(TargetPath, file.Name);
-                    file.CopyTo(tempPath, Overwrite);
+                    file.CopyTo(tempPath, mustOverwrite);
                 }
                 // Отрабатываем подкаталоги
                 DirectoryInfo[] subDirs = dirSource.GetDirectories();
@@ -110,23 +113,24 @@ namespace FileManagerApp
                 foreach (DirectoryInfo subdir in subDirs)
                 {
                     string tempPath = Path.Combine(TargetPath, subdir.Name);
-                    Copy(subdir.FullName, tempPath, overwriteParam);
+                    Copy(subdir.FullName, tempPath, mustOverwrite);
                 }
             }
             else
             {
                 FileInfo SourceFile = new FileInfo(SourcePath);
-                string tempPath = Path.Combine(TargetPath, SourceFile.Name);
-                SourceFile.CopyTo(tempPath, Overwrite);
+                TargetPath = Path.Combine(TargetPath, SourceFile.Name);
+                SourceFile.CopyTo(TargetPath, mustOverwrite);
             }
         }
 
-        public static void Move(string SourcePath, string TargetPath) //ToDo Exceptions and Overwriting
+        public static void Move(string SourcePath, string TargetPath)
         {
-            FileAttributes attr = File.GetAttributes(SourcePath);
-            if (attr.HasFlag(FileAttributes.Directory))
+            FileAttributes sourcePathAttr = File.GetAttributes(SourcePath);
+            if (sourcePathAttr.HasFlag(FileAttributes.Directory))
             {
-                Directory.Move(SourcePath, TargetPath);
+                DirectoryInfo SourceDir = new DirectoryInfo(SourcePath);
+                SourceDir.MoveTo(TargetPath);
             }
             else
             {
@@ -135,7 +139,7 @@ namespace FileManagerApp
             }
         }
 
-        public static void Delete(string Path) //ToDo Exceptions
+        public static void Delete(string Path) 
         {
             FileAttributes attr = File.GetAttributes(Path);
             if (attr.HasFlag(FileAttributes.Directory)) 
@@ -164,55 +168,21 @@ namespace FileManagerApp
             }
         }
 
-        public static void GetFileInfo() //ToDo
+        public static void GetFileInfo(string Path) //ToDo
         {
             Console.WriteLine("Получение информации о файлах в разработке");
             Console.ReadKey();
         }
 
-        public static void Parse(string Command)
+        public static void ChangeWorkDir(string Path)
         {
-            int LinesPerPage = Properties.Settings.Default.LinesPerPage;
-
-            string[] Args = new string[5];
-            string[] Commands = Command.Split();
-            for (int i = 0; i<Commands.Length; i++)
+            if (!Directory.Exists(Path))
             {
-                Args[i] = Commands[i];
+                throw new Exception($"Каталог {Path} не существует");
             }
-
-           switch (Args[0])
-            {
-                case "dir":
-                    ShowDirContents(Args[1], LinesPerPage);
-                    break;
-
-                case "man":
-                    ShowManual();
-                    break;
-
-                case "cp":
-                    Copy(Args[1], Args[2], Args[3]);
-                    break;
-
-                case "mv":
-                    Move(Args[1], Args[2]);
-                    break;
-
-                case "rm":
-                    Delete(Args[1]);
-                    break;
-
-                case "info":
-                    GetFileInfo();
-                    break;
-
-                default:
-                    Console.WriteLine("Команда не распознана");
-                    break;
-            }
-            
-
+            DirectoryInfo newWorkDirInfo = new DirectoryInfo(Path);
+            Properties.Settings.Default.workDir = newWorkDirInfo.FullName;
+            Properties.Settings.Default.Save();
         }
     }
 }
