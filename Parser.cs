@@ -7,13 +7,13 @@ using System.IO;
 
 namespace FileManagerApp
 {
-    public class Parser
+    public class Parser //Это парсер команд
     {
-        public static void Parse(string Command)
+        public static void Parse(string Command) // Раскладываем команду на массив строк, анализируем элементы массива и запускаем нужный метод приложения.
         {
             int LinesPerPage = Properties.Settings.Default.LinesPerPage;
 
-            string[] AppArgs = new string[5];
+            string[] AppArgs = new string[4];
             string[] CommandArgs = Command.Split();
             for (int i = 0; i < CommandArgs.Length; i++)
             {
@@ -74,10 +74,11 @@ namespace FileManagerApp
             }
         }
 
-        public static string ConstructPath(string sourcePath)
+        // Конструктор пути к файлу или каталогу. 
+        public static string ConstructPath(string SourcePath)
         {
             string workDir = Properties.Settings.Default.workDir;
-            string resultPath = Path.Combine(workDir, sourcePath);
+            string resultPath = Path.Combine(workDir, SourcePath);
             return resultPath;
         }
     }

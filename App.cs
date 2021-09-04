@@ -7,7 +7,7 @@ using System.IO;
 
 namespace FileManagerApp
 {
-    public class App
+    public class App // класс с функциональными методами приложения
     {
         public static void ShowDirContents(string DirName, int LinesPerPage)
         {
@@ -27,7 +27,7 @@ namespace FileManagerApp
                 }
                 GetNextUserChoice(Pages, ref page, ref isDone, ref isEdgePage);
             }
-        }
+        } //постраничный вывод содержимого каталога
         public static void DisplayPage(string[] DirContents, int page)
         {
             Console.WriteLine($"Страница {page + 1}:");
@@ -36,7 +36,7 @@ namespace FileManagerApp
             {
                 Console.WriteLine(output.ElementAt(i));
             }
-        }
+        } //вывод страницы содержимого каталога
         public static void GetNextUserChoice(int totalPages, ref int page, ref bool isDone, ref bool isEdgePage)
         {
             var input = Console.ReadKey();
@@ -73,12 +73,11 @@ namespace FileManagerApp
                     isDone = true;
                     break;
             }
-        }
+        } //навигация по страницам вывода
         public static void ShowManual()
         {
             Console.WriteLine(File.ReadAllText(Properties.Settings.Default.manPath));
-        }
-
+        } // показ инструкции
         public static void Copy(string SourcePath, string TargetPath, bool mustOverwrite)
         {
             //Если копируем каталог, добавляем его в TargetPath
@@ -120,8 +119,7 @@ namespace FileManagerApp
                 TargetPath = Path.Combine(TargetPath, SourceFile.Name);
                 SourceFile.CopyTo(TargetPath, mustOverwrite);
             }
-        }
-
+        } //копирование
         public static void Move(string SourcePath, string TargetPath)
         {
             FileAttributes sourcePathAttr = File.GetAttributes(SourcePath);
@@ -135,9 +133,8 @@ namespace FileManagerApp
                 FileInfo SourceFile = new FileInfo(SourcePath);
                 SourceFile.MoveTo(TargetPath);
             }
-        }
-
-        public static void Delete(string Path) 
+        } //перемещение
+        public static void Delete(string Path)  //удаление
         {
             FileAttributes attr = File.GetAttributes(Path);
             if (attr.HasFlag(FileAttributes.Directory)) 
@@ -165,7 +162,6 @@ namespace FileManagerApp
                 File.Delete(Path);
             }
         }
-
         public static void GetFileInfo(string Path)
         {
             long byteSize = new long(); 
@@ -189,8 +185,7 @@ namespace FileManagerApp
             Console.WriteLine($"Только для чтения: {pathAttr.HasFlag(FileAttributes.ReadOnly)}");
             Console.WriteLine($"Размер в байтах: {byteSize}");
             Console.WriteLine($"\n");
-        }
-
+        } //показ информации о файле или каталоге (атрибуты и размер)
         public static void ChangeWorkDir(string Path)
         {
             if (!Directory.Exists(Path))
@@ -200,8 +195,7 @@ namespace FileManagerApp
             DirectoryInfo newWorkDirInfo = new DirectoryInfo(Path);
             Properties.Settings.Default.workDir = newWorkDirInfo.FullName;
             Properties.Settings.Default.Save();
-        }
-
+        } //перемещение по каталогам
         public static long GetDirSize (DirectoryInfo DirInfo)
         {
             long size = 0;
@@ -218,11 +212,10 @@ namespace FileManagerApp
                 size += GetDirSize(subDir);
             }
             return size;
-        }
-
+        } //расчёт размера каталога
         public static void CreateDir(string Path)
         {
             Directory.CreateDirectory(Path);
-        }
+        } //создание каталога
     }
 }

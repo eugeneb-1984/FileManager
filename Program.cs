@@ -15,6 +15,8 @@ namespace FileManagerApp
             bool isDone = false;
             Console.WriteLine("Это консольный файловый менеджер.");
             Console.WriteLine("для вывода инструкции наберите man");
+            Console.WriteLine("для завершения работы наберите done");
+            //Показ командной строки
             while (!isDone)
             {
                 try
@@ -24,14 +26,14 @@ namespace FileManagerApp
                     var command = Console.ReadLine();
                     if (command != "done")
                     {
-                        Parser.Parse(command);
+                        Parser.Parse(command); //запускаем парсер введённой команды
                     }
                     else
                     {
                         isDone = true;
                     }
                 }
-                catch (Exception ex)
+                catch (Exception ex) // ловим исключения
                 {
                     Console.WriteLine($"Ошибка: {ex.Message}");
                 }
