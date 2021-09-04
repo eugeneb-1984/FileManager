@@ -20,8 +20,6 @@ namespace FileManagerApp
                 AppArgs[i] = CommandArgs[i];
             }
 
-            bool isAbsoluteSource = AppArgs.Any("-as".Equals);
-            bool isAbsoluteTarget = AppArgs.Any("-at".Equals);
             bool mustOverwrite = AppArgs.Any("-o".Equals);
 
             if (AppArgs[1] == null)
@@ -33,13 +31,13 @@ namespace FileManagerApp
                 AppArgs[2] = "";
             }
 
-            string sourcePath = ConstructPath(AppArgs[1], isAbsoluteSource);
-            string targetPath = ConstructPath(AppArgs[2], isAbsoluteTarget); 
+            string path = ConstructPath(AppArgs[1]);
+            string targetPath = ConstructPath(AppArgs[2]); 
 
             switch (AppArgs[0])
             {
                 case "dir":
-                    App.ShowDirContents(sourcePath, LinesPerPage);
+                    App.ShowDirContents(path, LinesPerPage);
                     break;
 
                 case "man":
@@ -47,23 +45,27 @@ namespace FileManagerApp
                     break;
 
                 case "cp":
-                    App.Copy(sourcePath, targetPath, mustOverwrite);
+                    App.Copy(path, targetPath, mustOverwrite);
                     break;
 
                 case "mv":
-                    App.Move(sourcePath, targetPath);
+                    App.Move(path, targetPath);
                     break;
 
                 case "rm":
-                    App.Delete(sourcePath);
+                    App.Delete(path);
                     break;
 
                 case "info":
-                    App.GetFileInfo(sourcePath);
+                    App.GetFileInfo(path);
                     break;
 
                 case "cd":
-                    App.ChangeWorkDir(sourcePath);
+                    App.ChangeWorkDir(path);
+                    break;
+
+                case "mkdir":
+                    App.CreateDir(path);
                     break;
 
                 default:
@@ -72,10 +74,10 @@ namespace FileManagerApp
             }
         }
 
-        public static string ConstructPath(string sourcePath, bool isAbsolute)
+        public static string ConstructPath(string sourcePath)
         {
             string workDir = Properties.Settings.Default.workDir;
-            string resultPath = isAbsolute ? sourcePath : Path.Combine(workDir, sourcePath);
+            string resultPath = Path.Combine(workDir, sourcePath);
             return resultPath;
         }
     }

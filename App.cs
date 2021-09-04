@@ -27,7 +27,6 @@ namespace FileManagerApp
                 }
                 GetNextUserChoice(Pages, ref page, ref isDone, ref isEdgePage);
             }
-
         }
         public static void DisplayPage(string[] DirContents, int page)
         {
@@ -75,10 +74,9 @@ namespace FileManagerApp
                     break;
             }
         }
-        public static void ShowManual() //ToDo
+        public static void ShowManual()
         {
-            Console.WriteLine("Скоро здесь будет инструкция");
-            Console.ReadKey();
+            Console.WriteLine(File.ReadAllText(Properties.Settings.Default.manPath));
         }
 
         public static void Copy(string SourcePath, string TargetPath, bool mustOverwrite)
@@ -168,10 +166,29 @@ namespace FileManagerApp
             }
         }
 
-        public static void GetFileInfo(string Path) //ToDo
+        public static void GetFileInfo(string Path)
         {
-            Console.WriteLine("Получение информации о файлах в разработке");
-            Console.ReadKey();
+            long byteSize = new long(); 
+            FileAttributes pathAttr = File.GetAttributes(Path);
+            
+            if (pathAttr.HasFlag(FileAttributes.Directory))
+            {
+                DirectoryInfo pathInfo = new DirectoryInfo(Path);
+                byteSize = GetDirSize(pathInfo);
+            }
+            else
+            {
+                FileInfo pathInfo = new FileInfo(Path);
+                byteSize = pathInfo.Length;
+            }
+
+            Console.WriteLine($"\n");
+            Console.WriteLine($"Информация о {Path}:");
+            Console.WriteLine($"Это каталог: {pathAttr.HasFlag(FileAttributes.Directory)}");
+            Console.WriteLine($"Системный: {pathAttr.HasFlag(FileAttributes.System)}");
+            Console.WriteLine($"Только для чтения: {pathAttr.HasFlag(FileAttributes.ReadOnly)}");
+            Console.WriteLine($"Размер в байтах: {byteSize}");
+            Console.WriteLine($"\n");
         }
 
         public static void ChangeWorkDir(string Path)
@@ -183,6 +200,29 @@ namespace FileManagerApp
             DirectoryInfo newWorkDirInfo = new DirectoryInfo(Path);
             Properties.Settings.Default.workDir = newWorkDirInfo.FullName;
             Properties.Settings.Default.Save();
+        }
+
+        public static long GetDirSize (DirectoryInfo DirInfo)
+        {
+            long size = 0;
+            
+            FileInfo [] dirFilesInfo = DirInfo.GetFiles();
+            foreach (FileInfo file in dirFilesInfo)
+            {
+                size += file.Length;
+            }
+
+            DirectoryInfo [] subDirsInfo = DirInfo.GetDirectories();
+            foreach (DirectoryInfo subDir in subDirsInfo)
+            {
+                size += GetDirSize(subDir);
+            }
+            return size;
+        }
+
+        public static void CreateDir(string Path)
+        {
+            Directory.CreateDirectory(Path);
         }
     }
 }
